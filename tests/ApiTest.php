@@ -32,6 +32,15 @@ class ApiTest extends WebTestCase
         ], $this->request('GET', '/api/v1?method=rates'));
     }
 
+    public function testRatesForCurrencies(): void
+    {
+        $this->mockRates();
+
+        $data = $this->request('GET', '/api/v1?method=rates&currency=BTC,doge')['data'];
+
+        $this->assertSame(['DOGE' => 0.0845036099, 'BTC' => 81217.994234948], $data);
+    }
+
     public function testConvert(): void
     {
         $this->mockRates();

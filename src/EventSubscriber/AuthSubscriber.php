@@ -18,7 +18,7 @@ class AuthSubscriber implements EventSubscriberInterface
 
     public static function getSubscribedEvents(): array
     {
-        return [KernelEvents::REQUEST => 'onRequest'];
+        return [KernelEvents::REQUEST => ['onRequest', 64]];
     }
 
     public function onRequest(RequestEvent $event): void

@@ -40,7 +40,7 @@ class ApiController
             throw new ApiException('Invalid currency');
         }
 
-        $currencies = $currency ? explode(',', $currency) : [];
+        $currencies = $currency ? explode(',', strtoupper($currency)) : [];
 
         $rates = $this->ratesProvider->getRates();
 
