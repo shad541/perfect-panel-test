@@ -32,6 +32,39 @@ class ApiTest extends WebTestCase
         ], $this->request('GET', '/api/v1?method=rates'));
     }
 
+    public function testConvert(): void
+    {
+        $this->mockRates();
+
+        $this->assertSame([
+            'status' => 'success',
+            'code' => 200,
+            'data' => [
+                'currency_from' => 'BTC',
+                'currency_to' => 'USD',
+                'value' => 1,
+                'converted_value' => 81217.99,
+                'rate' => 81217.994234948,
+            ],
+        ], $this->request('POST', '/api/v1?method=convert', [
+            'currency_from' => 'BTC',
+            'currency_to' => 'USD',
+            'value' => '1.00',
+        ]));
+    }
+
+    public function testConvertMinimumValue(): void
+    {
+        $this->mockRates();
+        $this->request('POST', '/api/v1?method=convert', [
+            'currency_from' => 'USD',
+            'currency_to' => 'BTC',
+            'value' => '0.001',
+        ]);
+
+        $this->assertError(400, 'Minimum value is 0.01');
+    }
+
     private function mockRates(): void
     {
         $response = new JsonMockResponse([
@@ -50,5 +83,15 @@ class ApiTest extends WebTestCase
         ]);
 
         return json_decode($this->client->getResponse()->getContent(), true);
+    }
+
+    private function assertError(int $code, string $message): void
+    {
+        $this->assertResponseStatusCodeSame($code);
+        $this->assertSame([
+            'status' => 'error',
+            'code' => $code,
+            'message' => $message,
+        ], json_decode($this->client->getResponse()->getContent(), true));
     }
 }

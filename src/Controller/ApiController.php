@@ -22,8 +22,10 @@ class ApiController
     {
         $method = $request->query->get('method');
 
-        if ($method === 'rates') {
+        if ($method === 'rates' && $request->isMethod('GET')) {
             $data = $this->rates($request);
+        } elseif ($method === 'convert' && $request->isMethod('POST')) {
+            $data = $this->convert($request);
         } else {
             throw new ApiException('Unknown method', 404);
         }
@@ -43,5 +45,28 @@ class ApiController
         $rates = $this->ratesProvider->getRates();
 
         return $this->exchange->rates($rates, $currencies);
+    }
+
+    private function convert(Request $request): array
+    {
+        $params = $request->getPayload();
+        $from = strtoupper($params->get('currency_from', ''));
+        $to = strtoupper($params->get('currency_to', ''));
+        $value = $params->get('value');
+
+        if (!preg_match('/^[A-Z0-9]+$/', $from) || !preg_match('/^[A-Z0-9]+$/', $to) || !preg_match('/^\d+(\.\d+)?$/', (string) $value)) {
+            throw new ApiException('Invalid parameters');
+        }
+
+        $rates = $this->ratesProvider->getRates();
+        $result = $this->exchange->convert($rates, $from, $to, $value);
+
+        return [
+            'currency_from' => $from,
+            'currency_to' => $to,
+            'value' => (float) $value,
+            'converted_value' => $result['converted_value'],
+            'rate' => $result['rate'],
+        ];
     }
 }
