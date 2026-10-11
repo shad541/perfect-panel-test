@@ -1,0 +1,10 @@
+services:
+  php:
+    build: .
+    ports:
+      - "${PORT:-8000}:8080"
+    volumes:
+      - .:/app
+    user: "${UID:-1000}:${GID:-1000}"
+    environment:
+      COMPOSER_HOME: /tmp/composer
