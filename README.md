@@ -1,5 +1,4 @@
-** Задание 1 **
-
+## Задание 1 ##
 ```
 SELECT
     u.id AS ID,
@@ -15,3 +14,40 @@ HAVING COUNT(ub.id) = 2
     AND COUNT(DISTINCT b.author) = 1
     AND SUM(ub.return_date IS NULL OR ub.return_date >= ub.get_date + INTERVAL 2 WEEK) = 0
 ```
+
+## Задание 2 ##
+
+Как запустить:
+
+все команды - в директории с проектом
+сервис поднимается на 8000 порту от пользователя UID,GID=1000 (можно поменять в compose.yml)
+
+запуск сервиса:
+
+`docker compose up -d --build`
+
+установка зависимостей:
+
+`docker compose exec php composer install`
+
+поргон тестов:
+
+`docker compose exec php php bin/phpunit`
+
+Запрос курсов:
+
+`curl -H "Authorization: Bearer VrHbghos4HcDl2n_6dhfWpE0WniimQAzXXi0a_h15Y-2DkFzK1lWs6hdMwvcqnsR" "localhost:8000/api/v1?method=rates&currency=BTC,ETH"`
+
+Запрос на конвертацию:
+
+`curl -X POST -H "Authorization: Bearer VrHbghos4HcDl2n_6dhfWpE0WniimQAzXXi0a_h15Y-2DkFzK1lWs6hdMwvcqnsR" -d "currency_from=BTC&currency_to=USD&value=1" "localhost:8000/api/v1?method=convert"`
+
+В рамках тестового задания:
+- С деньгами лучше использовать bcmath.
+- Кэширование и фоллбэк курсов не делал.
+- Токен захардкодил в .env и положил его в git
+- Состав токена не валидируется - достаточно сравнить с токеном из запроса.
+- Security Component от Symfony сознательно не использовал.
+
+Замечания:
+Совсем маленькие числа при конвертации попадают в ответ в виде `1.17968e-5` . Альтернатива - возвращать в виде строки, либо писать собственный json_encode.
